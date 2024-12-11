@@ -50,24 +50,25 @@ const samp=[
     },
     {
       "type": "Graffiti",
-      "image": "https://upload.wikimedia.org/wikipedia/commons/3/39/Graffiti.jpg",
+      "image": "https://plus.unsplash.com/premium_vector-1719816838907-8b4304af21e6?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8YmFja2dyb3VuZHxlbnwwfHwwfHx8MA%3D%3D",
       "details": "Offensive graffiti painted on the walls of a public building.",
       "severity": 1,
       "location": "Elm Street, Westend"
     },
     {
       "type": "Noise Pollution",
-      "image": "https://upload.wikimedia.org/wikipedia/commons/d/d2/Construction_noise.jpg",
+      "image": "https://plus.unsplash.com/premium_vector-1720439877925-d1991a366150?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTR8fGJhY2tncm91bmR8ZW58MHx8MHx8fDA%3D",
       "details": "Construction noise at night disturbing nearby residents.",
       "severity": 3,
       "location": "Cedar Lane, Midtown"
     },
     {
       "type": "Overflowing Drain",
-      "image": "https://upload.wikimedia.org/wikipedia/commons/2/2b/Overflowing_drain.jpg",
+      "image": "https://plus.unsplash.com/premium_vector-1697729804286-7dd6c1a04597?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8bmF0dXJlfGVufDB8fDB8fHww",
       "details": "A clogged drain causing water to overflow onto the road.",
       "severity": 4,
       "location": "Lakeside Road, Riverside"
     }
   ]
   
+module.exports = {data: samp};

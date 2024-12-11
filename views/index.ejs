@@ -1,0 +1,16 @@
+<% layout("layout") %>
+
+<div class="card-container">
+    <% problems.forEach(problem => { %>
+        <div class="card">
+            <img src="<%= problem.image %>" alt="<%= problem.type %>">
+            <h2><%= problem.type %></h2>
+            <p><%= problem.details %></p>
+            <p><strong>Severity:</strong> <%= problem.severity %></p>
+            <p><strong>Location:</strong> <%= problem.location %></p>
+            <form action="/delete/<%= problem._id %>" method="POST">
+                <button type="submit">Delete</button>
+            </form>
+        </div>
+    <% }) %>
+</div>

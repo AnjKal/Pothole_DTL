@@ -1,0 +1,22 @@
+<% layout("layout") %>
+
+<h2>Add a Civic Issue</h2>
+<form action="/add" method="POST">
+    <label for="type">Type of Problem:</label>
+    <input type="text" id="type" name="type" required>
+
+    <label for="image">Image URL:</label>
+    <input type="text" id="image" name="image" required>
+
+    <label for="details">Description:</label>
+    <textarea id="details" name="details" required></textarea>
+
+    <label for="severity">Severity (1-5):</label>
+    <input type="number" id="severity" name="severity" min="1" max="5" required>
+
+    <label for="location">Location:</label>
+    <input type="text" id="location" name="location" required>
+
+    <button type="submit">Add Issue</button>
+</form>
+

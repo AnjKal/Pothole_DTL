@@ -7,6 +7,7 @@ const sch = new schema({
     details:String,
     severity:Number,
     location:String,
+    comments: [{ text: String, date: Date }]
 });
 
 const prob = mongoose.model("prob",sch);

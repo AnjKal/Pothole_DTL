@@ -1,5 +1,6 @@
 <% layout("layout") %>
 
+<h2>Authority Dashboard</h2>
 <div class="card-container">
     <% problems.forEach(problem => { %>
         <div class="card">
@@ -14,7 +15,10 @@
                     <li><%= comment.text %> - <%= new Date(comment.date).toLocaleString() %></li>
                 <% }) %>
             </ul>
+            <form action="/authority/comment/<%= problem._id %>" method="POST">
+                <textarea name="comment" placeholder="Add a comment" required></textarea>
+                <button type="submit">Submit Comment</button>
+            </form>
         </div>
     <% }) %>
 </div>
-

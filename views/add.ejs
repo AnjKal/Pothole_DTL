@@ -1,12 +1,17 @@
 <% layout("layout") %>
 
 <h2>Add a Civic Issue</h2>
-<form action="/citizen/add" method="POST">
+<form action="/citizen/add" method="POST" enctype="multipart/form-data">
     <label for="type">Type of Problem:</label>
-    <input type="text" id="type" name="type" required>
+    <select id="type" name="type" required>
+        <option value="" disabled selected>Select a problem</option>
+        <option value="electricity">Electricity</option>
+        <option value="parking">Parking</option>
+        <option value="pothole">Pothole</option>
+    </select>
 
-    <label for="image">Image URL:</label>
-    <input type="text" id="image" name="image" required>
+    <label for="image">Upload Image:</label>
+    <input type="file" id="image" name="image" accept="image/*" required>
 
     <label for="details">Description:</label>
     <textarea id="details" name="details" required></textarea>

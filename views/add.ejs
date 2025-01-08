@@ -1,22 +1,170 @@
 <% layout("layout") %>
 
-<h2>Add a Civic Issue</h2>
-<form action="/citizen/add" method="POST">
-    <label for="type">Type of Problem:</label>
-    <input type="text" id="type" name="type" required>
+<h2 class="form-title">Add a Civic Issue</h2>
+<form action="/citizen/add" method="POST" enctype="multipart/form-data" class="issue-form">
+    <!-- Dropdown for selecting the type of problem -->
+    <label for="type" class="form-label">Type of Problem:</label>
+    <select id="type" name="type" required onchange="toggleOtherField()" class="form-input">
+        <option value="" disabled selected>Select an issue type</option>
+        <option value="Road">Road</option>
+        <option value="Streetlight">Streetlight</option>
+        <option value="Garbage">Garbage</option>
+        <option value="Water Supply">Water Supply</option>
+        <option value="Sewage">Sewage</option>
+        <option value="Other">Other</option>
+    </select>
+    <br><br>
 
-    <label for="image">Image URL:</label>
-    <input type="text" id="image" name="image" required>
+    <!-- Text box for 'Other' problem type -->
+    <div id="otherProblemContainer" class="other-problem-container" style="display: none;">
+        <label for="otherProblem" class="form-label">Specify the Problem:</label>
+        <input type="text" id="otherProblem" name="otherProblem" class="form-input" />
+    </div>
+    <br><br>
 
-    <label for="details">Description:</label>
-    <textarea id="details" name="details" required></textarea>
+    <label for="image" class="form-label">Upload Image:</label>
+    <input type="file" id="image" name="image" accept="image/*" required class="form-input">
+    <br><br>
 
-    <label for="severity">Severity (1-5):</label>
-    <input type="number" id="severity" name="severity" min="1" max="5" required>
+    <label for="details" class="form-label">Description:</label>
+    <textarea id="details" name="details" required class="form-input"></textarea>
+    <br><br>
 
-    <label for="location">Location:</label>
-    <input type="text" id="location" name="location" required>
+    <label for="severity" class="form-label">Severity (1-5):</label>
+    <input type="number" id="severity" name="severity" min="1" max="5" required class="form-input">
+    <br><br>
 
-    <button type="submit">Add Issue</button>
+    <label for="location" class="form-label">Location:</label>
+    <div>
+        <input type="text" id="location" name="location" required readonly class="form-input" placeholder="Fetching your location...">
+        <button type="button" onclick="getPlaceName()" class="geo-button">Get Location</button>
+    </div>
+    <br><br>
+
+    <button type="submit" class="submit-button">Add Issue</button>
 </form>
 
+<script>
+    function toggleOtherField() {
+        const typeSelect = document.getElementById("type");
+        const otherFieldContainer = document.getElementById("otherProblemContainer");
+        if (typeSelect.value === "Other") {
+            otherFieldContainer.style.display = "block";
+        } else {
+            otherFieldContainer.style.display = "none";
+            document.getElementById("otherProblem").value = ""; // Clear the 'Other' input
+        }
+    }
+
+    async function getPlaceName() {
+        if ("geolocation" in navigator) {
+            document.getElementById("location").value = "Fetching coordinates...";
+            navigator.geolocation.getCurrentPosition(async (position) => {
+                const latitude = position.coords.latitude;
+                const longitude = position.coords.longitude;
+
+                const apiKey = "8a0152bd6888463b95911555a350971d"; // Replace with your OpenCage API key
+                const url = `https://api.opencagedata.com/geocode/v1/json?q=${latitude}+${longitude}&key=${apiKey}`;
+
+                try {
+                    const response = await fetch(url);
+                    const data = await response.json();
+
+                    if (data.results && data.results.length > 0) {
+                        const placeName = data.results[0].formatted;
+                        document.getElementById("location").value = placeName;
+                    } else {
+                        document.getElementById("location").value = "Unable to find the place name.";
+                    }
+                } catch (error) {
+                    console.error("Error fetching the place name:", error);
+                    document.getElementById("location").value = "Error fetching the location.";
+                }
+            }, (error) => {
+                console.error("Geolocation error:", error);
+                document.getElementById("location").value = "Unable to access location.";
+            });
+        } else {
+            document.getElementById("location").value = "Geolocation not supported by this browser.";
+        }
+    }
+</script>
+
+<style>
+    body {
+        font-family: 'Arial', sans-serif;
+        background-color: #f4f7fc;
+        margin: 0;
+        padding: 0;
+    }
+
+    .form-title {
+        text-align: center;
+        font-size: 2em;
+        color: #2a3d66;
+        margin-top: 40px;
+    }
+
+    .issue-form {
+        background-color: white;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        width: 60%;
+        margin: 30px auto;
+        padding: 20px;
+        font-size: 1.1em;
+    }
+
+    .form-label {
+        font-size: 1.2em;
+        margin-bottom: 8px;
+        color: #2a3d66;
+    }
+
+    .form-input {
+        width: 100%;
+        padding: 10px;
+        margin-bottom: 15px;
+        font-size: 1.1em;
+        border-radius: 5px;
+        border: 1px solid #ccc;
+        box-sizing: border-box;
+    }
+
+    .form-input:focus {
+        border-color: #ffbc42;
+        outline: none;
+    }
+
+    .geo-button {
+        background-color: #2a3d66;
+        color: white;
+        padding: 10px 15px;
+        font-size: 1em;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        margin-top: 10px;
+    }
+
+    .geo-button:hover {
+        background-color: #ffbc42;
+        transition: background-color 0.3s;
+    }
+
+    .submit-button {
+        background-color: #2a3d66;
+        color: white;
+        padding: 12px 20px;
+        border: none;
+        border-radius: 5px;
+        font-size: 1.2em;
+        cursor: pointer;
+        width: 100%;
+    }
+
+    .submit-button:hover {
+        background-color: #ffbc42;
+        transition: background-color 0.3s;
+    }
+</style>

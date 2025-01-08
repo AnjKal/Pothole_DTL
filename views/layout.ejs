@@ -5,6 +5,69 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Civic Issues</title>
     <link rel="stylesheet" href="/style.css">
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f7fc;
+            margin: 0;
+            padding: 0;
+        }
+        header {
+            background-color: #2a3d66;
+            color: #fff;
+            padding: 20px 0;
+            text-align: center;
+            border-bottom: 4px solid #ffffff;
+        }
+        header h1 {
+            margin: 0;
+            font-size: 2.5em;
+            letter-spacing: 2px;
+        }
+        nav {
+            margin-top: 10px;
+        }
+        nav a {
+            text-decoration: none;
+            color: #ffffff;
+            margin: 0 15px;
+            font-size: 1.2em;
+            transition: color 0.3s;
+        }
+        nav a:hover {
+            color: #ffbc42;
+        }
+        main {
+            padding: 20px;
+            margin: 20px auto;
+            background-color: #ffffff;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 1200px;
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+        }
+        footer {
+            background-color: #2a3d66;
+            color: #ffffff;
+            text-align: center;
+            padding: 15px 0;
+            margin-top: 30px;
+            font-size: 1em;
+        }
+        /* Mobile responsiveness */
+        @media (max-width: 768px) {
+            header h1 {
+                font-size: 2em;
+            }
+            nav a {
+                font-size: 1em;
+                margin: 0 10px;
+            }
+            main {
+                width: 95%;
+            }
+        }
+    </style>
 </head>
 <body>
     <header>
@@ -17,5 +80,8 @@
     <main>
         <%- body %>
     </main>
+    <footer>
+        <p>&copy; 2025 Civic Issues Portal. All rights reserved.</p>
+    </footer>
 </body>
 </html>

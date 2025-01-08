@@ -1,13 +1,151 @@
+<!-- <% layout("layout") %>
+
+<div class="card-container">
+    <% problems.forEach(problem => { %>
+        <div class="card">
+            <img src="<%= problem.image %>" alt="<%= problem.type %>" class="card-img">
+            <div class="card-content">
+                <h2 class="card-title"><%= problem.type %></h2>
+                <p class="card-details"><%= problem.details %></p>
+                <p><strong>Severity:</strong> <%= problem.severity %></p>
+                <p><strong>Location:</strong> <%= problem.location %></p>
+
+                <h3>Status: <%= problem.status %></h3>
+
+                <% 
+                    let progressWidth = '0%';
+                    if (problem.status === 'Complaint Received') {
+                        progressWidth = '25%';
+                    } else if (problem.status === 'Responded by Authority') {
+                        progressWidth = '50%';
+                    } else if (problem.status === 'Work Under Progress') {
+                        progressWidth = '75%';
+                    } else if (problem.status === 'Work Done') {
+                        progressWidth = '100%';
+                    }
+                %>
+                <div class="progress-bar">
+                    <div class="progress" style=" <%= progressWidth %>"></div>
+                </div>
+
+                <h3 class="comment-header">Comments:</h3>
+                <ul class="comment-list">
+                    <% if (problem.comments && problem.comments.length > 0) { %>
+                        <% problem.comments.forEach(comment => { %>
+                            <li class="comment-item">
+                                <%= comment.text %> - <%= new Date(comment.date).toLocaleString() %>
+                            </li>
+                        <% }) %>
+                    <% } else { %>
+                        <li class="comment-item">No comments available</li>
+                    <% } %>
+                </ul>
+            </div>
+        </div>
+    <% }) %>
+</div>
+
+<style>
+    body {
+        font-family: 'Arial', sans-serif;
+        background-color: #f4f7fc;
+        margin: 0;
+        padding: 0;
+    }
+    .card-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 20px;
+        padding: 20px;
+    }
+    .card {
+        background-color: white;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+        transition: transform 0.3s ease;
+    }
+    .card:hover {
+        transform: translateY(-10px);
+    }
+    .card-img {
+        width: 100%;
+        height: 200px;
+        object-fit: cover;
+    }
+    .card-content {
+        padding: 20px;
+    }
+    .card-title {
+        font-size: 1.8em;
+        color: #2a3d66;
+        margin-bottom: 10px;
+    }
+    .card-details {
+        font-size: 1.1em;
+        color: #555;
+        margin-bottom: 15px;
+    }
+    .progress-bar {
+        width: 100%;
+        background-color: #f3f3f3;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        margin: 10px 0;
+        height: 20px;
+        overflow: hidden;
+    }
+    .progress {
+        height: 100%;
+        background-color: #4caf50;
+        transition: width 0.3s ease;
+    }
+    .comment-header {
+        font-size: 1.4em;
+        color: #2a3d66;
+        margin-top: 20px;
+    }
+    .comment-list {
+        list-style: none;
+        padding: 0;
+        margin-top: 10px;
+    }
+    .comment-item {
+        font-size: 1.1em;
+        color: #444;
+        margin-bottom: 5px;
+    }
+</style> -->
 <% layout("layout") %>
 
 <div class="card-container">
     <% problems.forEach(problem => { %>
         <div class="card">
-            <img src="<%= problem.image %>" alt="<%= problem.type %>">
+            <!-- <img src="/<%= problem.image %>" alt="<%= problem.type %>"> -->
+            <img src="<%= problem.image %>" alt="<%= problem.type %>" class="card-img">
             <h2><%= problem.type %></h2>
             <p><%= problem.details %></p>
             <p><strong>Severity:</strong> <%= problem.severity %></p>
             <p><strong>Location:</strong> <%= problem.location %></p>
+            
+            <h3>Status: <%= problem.status %></h3>
+
+            <% 
+                let progressWidth = '0%';
+                if (problem.status === 'Complaint Received') {
+                    progressWidth = '25%';
+                } else if (problem.status === 'Responded by Authority') {
+                    progressWidth = '50%';
+                } else if (problem.status === 'Work Under Progress') {
+                    progressWidth = '75%';
+                } else if (problem.status === 'Work Done') {
+                    progressWidth = '100%';
+                }
+            %>
+            <div class="progress-bar">
+                <div class="progress" style="width: <%= progressWidth %>"></div>
+            </div>
+            
             <h3>Comments:</h3>
             <ul>
                 <% problem.comments.forEach(comment => { %>
@@ -18,3 +156,21 @@
     <% }) %>
 </div>
 
+<style>
+    .progress-bar {
+        width: 100%;
+        background-color: #f3f3f3;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        margin: 10px 0;
+        height: 20px;
+        overflow: hidden;
+    }
+
+    .progress {
+        height: 100%;
+        width: auto;
+        background-color: #4caf50;
+        transition: width 0.3s ease;
+    }
+</style>

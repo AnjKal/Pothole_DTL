@@ -193,7 +193,7 @@ app.post("/authority/status/:id", async (req, res) => {
             console.log("Status updated:", status);
             await problem.save();
         }
-        res.redirect("/authority");
+       res.redirect("/authority"); // Redirect to the authority dashboard??
     } catch (e) {
         console.error("Error updating status:", e);
         res.status(500).send("Unable to update status. Please try again.");

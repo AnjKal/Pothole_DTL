@@ -1,5 +1,6 @@
 <% layout("layout") %>
 
+<<<<<<< HEAD
 <h2 class="form-title">Add a Civic Issue</h2>
 <form action="/citizen/add" method="POST" enctype="multipart/form-data" class="issue-form">
     <!-- Dropdown for selecting the type of problem -->
@@ -21,6 +22,20 @@
         <input type="text" id="otherProblem" name="otherProblem" class="form-input" />
     </div>
     <br><br>
+=======
+<h2>Add a Civic Issue</h2>
+<form action="/citizen/add" method="POST" enctype="multipart/form-data">
+    <label for="type">Type of Problem:</label>
+    <select id="type" name="type" required>
+        <option value="" disabled selected>Select a problem</option>
+        <option value="electricity">Electricity</option>
+        <option value="parking">Parking</option>
+        <option value="pothole">Pothole</option>
+    </select>
+
+    <label for="image">Upload Image:</label>
+    <input type="file" id="image" name="image" accept="image/*" required>
+>>>>>>> ca235dc7d5477f4867ee0b99f162348ddf788928
 
     <label for="image" class="form-label">Upload Image:</label>
     <input type="file" id="image" name="image" accept="image/*" required class="form-input">

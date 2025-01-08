@@ -1,21 +1,14 @@
 const mongoose = require("mongoose");
+const schema = mongoose.Schema;
 
-const ComplaintSchema = new mongoose.Schema({
-    type: String,
-    details: String,
-    severity: String,
-    location: String,
-    image: String,
-    comments: [
-        {
-            text: String,
-            date: Date,
-        },
-    ],
-    status: {
-        type: String,
-        default: "Complaint Received",
-    },
+const sch = new schema({
+    type:String,
+    image:String,
+    details:String,
+    severity:Number,
+    location:String,
+    comments: [{ text: String, date: Date }]
 });
 
-module.exports = mongoose.model("Complaint", ComplaintSchema);
+const prob = mongoose.model("prob",sch);
+module.exports = prob; 

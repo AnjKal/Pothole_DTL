@@ -14,7 +14,10 @@
     "ejs": "^3.1.10",
     "ejs-mate": "^4.0.0",
     "express": "^4.21.2",
+<<<<<<< HEAD
     "express-session": "^1.18.1",
+=======
+>>>>>>> ca235dc7d5477f4867ee0b99f162348ddf788928
     "mongoose": "^8.8.4",
     "multer": "^1.4.5-lts.1"
   }

@@ -20,11 +20,27 @@ async function main() {
 }
 main().catch((e) => console.error("DB Connection Error:", e));
 
-// Middleware
+const uploadDir = path.join(__dirname, "uploads");
+if (!fs.existsSync(uploadDir)) {
+    fs.mkdirSync(uploadDir);
+}
+
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        cb(null, "uploads/"); 
+    },
+    filename: (req, file, cb) => {
+        cb(null, `${Date.now()}-${file.originalname}`); 
+    },
+});
+
+const upload = multer({ storage });
+
 app.engine("ejs", engine);
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
 app.use(express.static(path.join(__dirname, "public")));
+app.use(express.static(path.join(__dirname, "uploads"))); 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use("/uploads", express.static(path.join(__dirname, "uploads"))); // Serve uploaded files
 
@@ -63,6 +79,7 @@ app.get("/", (req, res) => {
     res.render("landing");
 });
 
+<<<<<<< HEAD
 // --- User Authentication Routes ---
 
 // Register Page
@@ -119,9 +136,27 @@ app.post("/logout", (req, res) => {
 // --- Citizen Routes ---
 
 // Citizen Dashboard
+=======
+>>>>>>> ca235dc7d5477f4867ee0b99f162348ddf788928
 app.get("/citizen", async (req, res) => {
     const problems = await prob.find({});
-    res.render("index", { problems });
+
+    function getStatusWidth(status) {
+        switch (status) {
+            case "Complaint Received":
+                return "25%";
+            case "Responded by Authority":
+                return "50%";
+            case "Work Under Progress":
+                return "75%";
+            case "Work Done":
+                return "100%";
+            default:
+                return "0%";
+        }
+    }
+
+    res.render("index", { problems, getStatusWidth });
 });
 
 // Add Complaint Page
@@ -129,6 +164,7 @@ app.get("/citizen/add", (req, res) => {
     res.render("add");
 });
 
+<<<<<<< HEAD
 // Add Complaint Logic
 app.post("/citizen/add", upload.single("image"), async (req, res) => {
     const { type, details, severity, location } = req.body;
@@ -142,11 +178,20 @@ app.post("/citizen/add", upload.single("image"), async (req, res) => {
         console.error("Error saving complaint:", error);
         res.status(500).send("Error saving complaint");
     }
+=======
+app.post("/citizen/add", upload.single("image"), async (req, res) => {
+    const { type, details, severity, location } = req.body;
+    const imagePath = req.file ? req.file.filename : ""; 
+
+    await prob.create({ type, image: imagePath, details, severity, location });
+    res.redirect("/citizen");
+>>>>>>> ca235dc7d5477f4867ee0b99f162348ddf788928
 });
 
 // Delete Complaint Logic
 app.post("/delete/:id", async (req, res) => {
     const { id } = req.params;
+<<<<<<< HEAD
     try {
         await prob.findByIdAndDelete(id);
         res.redirect("/citizen");
@@ -166,6 +211,12 @@ app.get("/temp", async (req, res) => {
 
 
 // Authority Dashboard
+=======
+    await prob.findByIdAndDelete(id);
+    res.redirect("/authority");
+});
+
+>>>>>>> ca235dc7d5477f4867ee0b99f162348ddf788928
 app.get("/authority", async (req, res) => {
     const { type } = req.query; // Get the selected type from the query string
     let problems = [];
@@ -190,7 +241,10 @@ app.post("/authority/status/:id", async (req, res) => {
         const problem = await prob.findById(id);
         if (problem) {
             problem.status = status;
+<<<<<<< HEAD
             console.log("Status updated:", status);
+=======
+>>>>>>> ca235dc7d5477f4867ee0b99f162348ddf788928
             await problem.save();
         }
         res.redirect("/authority");
@@ -200,13 +254,17 @@ app.post("/authority/status/:id", async (req, res) => {
     }
 });
 
+<<<<<<< HEAD
 // Add Comment to Complaint
+=======
+>>>>>>> ca235dc7d5477f4867ee0b99f162348ddf788928
 app.post("/authority/comment/:id", async (req, res) => {
     const { id } = req.params;
     const { comment } = req.body;
 
     try {
         const problem = await prob.findById(id);
+<<<<<<< HEAD
         problem.comments.push({ text: comment, date: new Date() });
         await problem.save();
         res.redirect("/authority");
@@ -229,6 +287,23 @@ app.post("/authority/delete/:id", async (req, res) => {
 });
 
 // Start the Server
+=======
+        
+        problem.comments.push({ text: comment, date: new Date() });
+        
+        if (problem.status === "Complaint Received") {
+            problem.status = "Responded by Authority";
+        }
+        
+        await problem.save();
+        res.redirect("/authority");
+    } catch (e) {
+        console.error("Error adding comment:", e);
+        res.status(500).send("Unable to add comment. Please try again.");
+    }
+});
+
+>>>>>>> ca235dc7d5477f4867ee0b99f162348ddf788928
 app.listen(8000, () => {
     console.log("Server is running on port 8000");
 });

@@ -121,15 +121,22 @@
 <div class="card-container">
     <% problems.forEach(problem => { %>
         <div class="card">
+<<<<<<< HEAD
             <!-- <img src="/<%= problem.image %>" alt="<%= problem.type %>"> -->
             <img src="<%= problem.image %>" alt="<%= problem.type %>" class="card-img">
+=======
+            <img src="/<%= problem.image %>" alt="<%= problem.type %>">
+>>>>>>> ca235dc7d5477f4867ee0b99f162348ddf788928
             <h2><%= problem.type %></h2>
             <p><%= problem.details %></p>
             <p><strong>Severity:</strong> <%= problem.severity %></p>
             <p><strong>Location:</strong> <%= problem.location %></p>
             
             <h3>Status: <%= problem.status %></h3>
+<<<<<<< HEAD
 
+=======
+>>>>>>> ca235dc7d5477f4867ee0b99f162348ddf788928
             <% 
                 let progressWidth = '0%';
                 if (problem.status === 'Complaint Received') {
@@ -169,8 +176,15 @@
 
     .progress {
         height: 100%;
+<<<<<<< HEAD
         width: auto;
         background-color: #4caf50;
         transition: width 0.3s ease;
     }
 </style>
+=======
+        background-color: #4caf50;
+        transition: width 0.3s ease;
+    }
+</style>
+>>>>>>> ca235dc7d5477f4867ee0b99f162348ddf788928

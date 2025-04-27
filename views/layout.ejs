@@ -3,78 +3,33 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Civic Issues</title>
+    <title>Civic Issues Portal</title>
     <link rel="stylesheet" href="/style.css">
-    <style>
-        body {
-            font-family: 'Arial', sans-serif;
-            background-color: #f4f7fc;
-            margin: 0;
-            padding: 0;
-        }
-        header {
-            background-color: #2a3d66;
-            color: #fff;
-            padding: 20px 0;
-            text-align: center;
-            border-bottom: 4px solid #ffffff;
-        }
-        header h1 {
-            margin: 0;
-            font-size: 2.5em;
-            letter-spacing: 2px;
-        }
-        nav {
-            margin-top: 10px;
-        }
-        nav a {
-            text-decoration: none;
-            color: #ffffff;
-            margin: 0 15px;
-            font-size: 1.2em;
-            transition: color 0.3s;
-        }
-        nav a:hover {
-            color: #ffbc42;
-        }
-        main {
-            padding: 20px;
-            margin: 20px auto;
-            background-color: #ffffff;
-            border-radius: 12px;
-            width: 90%;
-            max-width: 1200px;
-            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
-        }
-        footer {
-            background-color: #2a3d66;
-            color: #ffffff;
-            text-align: center;
-            padding: 15px 0;
-            margin-top: 30px;
-            font-size: 1em;
-        }
-        /* Mobile responsiveness */
-        @media (max-width: 768px) {
-            header h1 {
-                font-size: 2em;
-            }
-            nav a {
-                font-size: 1em;
-                margin: 0 10px;
-            }
-            main {
-                width: 95%;
-            }
-        }
-    </style>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+          integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+    <!-- Leaflet Control Geocoder -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+            integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <!-- Leaflet Control Geocoder JS -->
+    <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
 </head>
 <body>
     <header>
-        <h1>Civic Issues Dashboard</h1>
+        <h1>Civic Issues Portal</h1>
         <nav>
-            <a href="/">Home</a>
-            <a href="/citizen/add">Add Issue</a>
+            <a href="/"><i class="fas fa-home"></i> Home</a>
+            <a href="/citizen/add"><i class="fas fa-plus-circle"></i> Add Issue</a>
+            <a href="/citizen/emergency" id="emergency-report-btn" class="emergency-button"><i class="fas fa-exclamation-triangle"></i> Emergency</a>
+            <a href="/forum" class="btn"><i class="fas fa-comments"></i> Discussion Forum</a>
         </nav>
     </header>
     <main>

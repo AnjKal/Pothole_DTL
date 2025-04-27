@@ -16,6 +16,18 @@ const ComplaintSchema = new mongoose.Schema({
         type: String,
         default: "Complaint Received",
     },
+    upvotes: {
+        type: Number,
+        default: 0
+    },
+    downvotes: {
+        type: Number,
+        default: 0
+    },
+    voters: [{
+        userId: String,
+        voteType: String // 'up' or 'down'
+    }]
 });
 
 module.exports = mongoose.model("Complaint", ComplaintSchema);

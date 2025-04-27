@@ -1,0 +1,304 @@
+<% layout("layout") %>
+
+<div class="container">
+  <h1>Discussion Forum</h1>
+  <form action="/forum/add" method="POST" class="post-form">
+    <textarea name="message" placeholder="Start a discussion or post a comment..." required></textarea>
+    <button type="submit" class="post-btn">Post</button>
+  </form>
+
+  <div class="forum-messages">
+    <% discussions.forEach(discussion => { %>
+      <div class="message" id="message-<%= discussion._id %>">
+        <div class="message-content">
+          <p><strong><%= discussion.username %>:</strong> <%= discussion.message %></p>
+          <span class="message-date"><%= new Date(discussion.date).toLocaleString() %></span>
+        </div>
+        
+        <!-- Voting Controls -->
+        <div class="voting-controls" data-id="<%= discussion._id %>">
+          <button class="vote-btn upvote-btn" onclick="votePost('<%= discussion._id %>', 'up')">
+            <i class="fas fa-thumbs-up"></i>
+            <span class="upvote-count"><%= discussion.upvotes || 0 %></span>
+          </button>
+          <button class="vote-btn downvote-btn" onclick="votePost('<%= discussion._id %>', 'down')">
+            <i class="fas fa-thumbs-down"></i>
+            <span class="downvote-count"><%= discussion.downvotes || 0 %></span>
+          </button>
+        </div>
+      </div>
+    <% }) %>
+  </div>
+
+  <!-- Clear Discussions Button -->
+  <form action="/forum/clear" method="POST">
+    <button class="clear-button" type="submit">Clear Discussions</button>
+  </form>
+</div>
+
+<!-- Font Awesome for icons -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+
+<script>
+  // Function to handle voting on forum posts
+  function votePost(postId, voteType) {
+    console.log(`Submitting ${voteType}vote for forum post ${postId}`);
+    
+    const container = document.querySelector(`.voting-controls[data-id="${postId}"]`);
+    if (!container) {
+      console.error(`Container for forum post ${postId} not found`);
+      alert('Error: Could not find the forum post container');
+      return;
+    }
+    
+    const upvoteBtn = container.querySelector('.upvote-btn');
+    const downvoteBtn = container.querySelector('.downvote-btn');
+    
+    // Show loading state
+    if (voteType === 'up') {
+      upvoteBtn.disabled = true;
+      upvoteBtn.innerHTML = `<i class="fas fa-spinner fa-spin"></i>`;
+    } else {
+      downvoteBtn.disabled = true;
+      downvoteBtn.innerHTML = `<i class="fas fa-spinner fa-spin"></i>`;
+    }
+    
+    fetch(`/forum/${postId}/${voteType}vote`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    })
+    .then(response => {
+      if (!response.ok) {
+        throw new Error(`Server returned ${response.status}: ${response.statusText}`);
+      }
+      return response.json();
+    })
+    .then(data => {
+      console.log(`Vote response:`, data);
+      
+      // Reset button state
+      if (voteType === 'up') {
+        upvoteBtn.disabled = false;
+        upvoteBtn.innerHTML = `<i class="fas fa-thumbs-up"></i> <span class="upvote-count">${data.upvotes || 0}</span>`;
+        upvoteBtn.classList.add('active');
+      } else {
+        downvoteBtn.disabled = false;
+        downvoteBtn.innerHTML = `<i class="fas fa-thumbs-down"></i> <span class="downvote-count">${data.downvotes || 0}</span>`;
+        downvoteBtn.classList.add('active');
+      }
+      
+      // Update counts directly
+      const upvoteCount = container.querySelector('.upvote-count');
+      const downvoteCount = container.querySelector('.downvote-count');
+      
+      if (upvoteCount) upvoteCount.textContent = data.upvotes || 0;
+      if (downvoteCount) downvoteCount.textContent = data.downvotes || 0;
+      
+      // Show success notification
+      alert(`Your ${voteType}vote has been recorded!`);
+    })
+    .catch(error => {
+      console.error('Error voting on forum post:', error);
+      
+      // Reset button state
+      if (voteType === 'up') {
+        upvoteBtn.disabled = false;
+        upvoteBtn.innerHTML = `<i class="fas fa-thumbs-up"></i> <span class="upvote-count">0</span>`;
+      } else {
+        downvoteBtn.disabled = false;
+        downvoteBtn.innerHTML = `<i class="fas fa-thumbs-down"></i> <span class="downvote-count">0</span>`;
+      }
+      
+      alert('Error voting on this post. Please try again.');
+    });
+  }
+</script>
+
+<style>
+  /* Container */
+  .container {
+    background: #ffffff;
+    color: #333;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    width: 90%;
+    max-width: 800px;
+    padding: 30px;
+    margin: 30px auto;
+  }
+
+  /* Heading */
+  .container h1 {
+    font-size: 2.2rem;
+    color: #2a3d66;
+    margin-bottom: 20px;
+    text-align: center;
+  }
+
+  /* Form Styling */
+  .post-form {
+    margin-bottom: 30px;
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 10px;
+  }
+
+  .post-form textarea {
+    width: 100%;
+    padding: 15px;
+    margin: 10px 0;
+    border: 2px solid #ddd;
+    border-radius: 10px;
+    font-size: 1rem;
+    resize: none;
+    min-height: 100px;
+    transition: border-color 0.3s ease;
+  }
+
+  .post-form textarea:focus {
+    border-color: #2a3d66;
+    outline: none;
+  }
+
+  .post-btn {
+    background: #2a3d66;
+    color: #fff;
+    font-size: 1.1rem;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    width: 100%;
+    transition: background 0.3s ease;
+  }
+
+  .post-btn:hover {
+    background: #374f84;
+  }
+
+  /* Forum Messages */
+  .forum-messages {
+    margin-top: 20px;
+  }
+
+  .message {
+    background: #f9f9f9;
+    color: #333;
+    padding: 15px;
+    margin-bottom: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .message-content {
+    flex: 1;
+  }
+
+  .message p {
+    margin: 0;
+    font-size: 1rem;
+    line-height: 1.5;
+  }
+
+  .message-date {
+    display: block;
+    font-size: 0.8rem;
+    color: #777;
+    margin-top: 10px;
+  }
+
+  /* Voting Controls */
+  .voting-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-left: 15px;
+  }
+
+  .vote-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px 10px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.2s ease;
+    background-color: #f0f0f0;
+    color: #333;
+    min-width: 70px;
+  }
+
+  .vote-btn i {
+    margin-right: 5px;
+  }
+
+  .upvote-btn:hover {
+    background-color: #e6f7f2;
+    color: #28a745;
+  }
+
+  .downvote-btn:hover {
+    background-color: #fdf1f1;
+    color: #dc3545;
+  }
+
+  .upvote-btn.active {
+    background-color: #28a745;
+    color: white;
+  }
+
+  .downvote-btn.active {
+    background-color: #dc3545;
+    color: white;
+  }
+
+  /* Clear Button */
+  .clear-button {
+    margin-top: 20px;
+    background: #dc3545;
+    color: #fff;
+    font-size: 1rem;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    width: 100%;
+    transition: background 0.3s ease;
+  }
+
+  .clear-button:hover {
+    background: #c82333;
+  }
+
+  /* Responsive Design */
+  @media (max-width: 768px) {
+    .container {
+      padding: 20px;
+      width: 95%;
+    }
+
+    .container h1 {
+      font-size: 1.8rem;
+    }
+
+    .message {
+      flex-direction: column;
+    }
+
+    .voting-controls {
+      flex-direction: row;
+      margin-left: 0;
+      margin-top: 15px;
+      width: 100%;
+      justify-content: center;
+    }
+  }
+</style>

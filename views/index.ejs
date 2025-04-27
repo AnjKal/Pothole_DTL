@@ -1,176 +1,606 @@
-<!-- <% layout("layout") %>
+<% layout("layout") %>
 
-<div class="card-container">
+<div class="dashboard-header">
+    <h1>Civic Issues Dashboard</h1>
+    <p>View and track pothole and other civic issues in your community.</p>
+</div>
+
+<!-- Map container for all pothole locations -->
+<div class="map-container" id="issuesMap"></div>
+
+<div class="card-container" id="issuesContainer">
     <% problems.forEach(problem => { %>
-        <div class="card">
-            <img src="<%= problem.image %>" alt="<%= problem.type %>" class="card-img">
+        <div class="card" id="card-<%= problem._id %>" data-location="<%= problem.location %>" data-type="<%= problem.type %>">
+            <% if (problem.image) { %>
+                <img src="<%= problem.image %>" alt="<%= problem.type %>" class="card-img">
+            <% } else { %>
+                <img src="/images/placeholder.jpg" alt="No image available" class="card-img">
+            <% } %>
             <div class="card-content">
-                <h2 class="card-title"><%= problem.type %></h2>
-                <p class="card-details"><%= problem.details %></p>
+                <h2><%= problem.type %></h2>
+                <p><%= problem.details %></p>
                 <p><strong>Severity:</strong> <%= problem.severity %></p>
                 <p><strong>Location:</strong> <%= problem.location %></p>
-
-                <h3>Status: <%= problem.status %></h3>
-
+                
+                <div class="voting-container" data-id="<%= problem._id %>">
+                    <button class="upvote-btn" onclick="voteIssue('<%= problem._id %>', 'up')">
+                        <i class="fas fa-thumbs-up"></i> Upvote
+                        <span class="upvote-count"><%= problem.upvotes || 0 %></span>
+                    </button>
+                    <button class="downvote-btn" onclick="voteIssue('<%= problem._id %>', 'down')">
+                        <i class="fas fa-thumbs-down"></i> Downvote
+                        <span class="downvote-count"><%= problem.downvotes || 0 %></span>
+                    </button>
+                </div>
+                
                 <% 
+                    let statusClass = '';
                     let progressWidth = '0%';
+                    
                     if (problem.status === 'Complaint Received') {
+                        statusClass = 'status-received';
                         progressWidth = '25%';
                     } else if (problem.status === 'Responded by Authority') {
+                        statusClass = 'status-responded';
                         progressWidth = '50%';
                     } else if (problem.status === 'Work Under Progress') {
+                        statusClass = 'status-progress';
                         progressWidth = '75%';
                     } else if (problem.status === 'Work Done') {
+                        statusClass = 'status-done';
                         progressWidth = '100%';
                     }
                 %>
+                
+                <div class="status-label <%= statusClass %>" id="status-<%= problem._id %>"><%= problem.status %></div>
+                
                 <div class="progress-bar">
-                    <div class="progress" style=" <%= progressWidth %>"></div>
+                    <div class="progress" id="progress-<%= problem._id %>" style="width: <%= progressWidth %>"></div>
                 </div>
-
-                <h3 class="comment-header">Comments:</h3>
-                <ul class="comment-list">
-                    <% if (problem.comments && problem.comments.length > 0) { %>
-                        <% problem.comments.forEach(comment => { %>
-                            <li class="comment-item">
-                                <%= comment.text %> - <%= new Date(comment.date).toLocaleString() %>
-                            </li>
-                        <% }) %>
-                    <% } else { %>
-                        <li class="comment-item">No comments available</li>
-                    <% } %>
-                </ul>
+                
+                <div class="comment-section">
+                    <h3 class="comment-header">Comments:</h3>
+                    <ul class="comment-list" id="comments-<%= problem._id %>">
+                        <% if (problem.comments && problem.comments.length > 0) { %>
+                            <% problem.comments.forEach(comment => { %>
+                                <li class="comment-item">
+                                    <%= comment.text %> - <%= new Date(comment.date).toLocaleString() %>
+                                </li>
+                            <% }) %>
+                        <% } else { %>
+                            <li class="comment-item">No comments available</li>
+                        <% } %>
+                    </ul>
+                </div>
             </div>
         </div>
     <% }) %>
 </div>
 
-<style>
-    body {
-        font-family: 'Arial', sans-serif;
-        background-color: #f4f7fc;
-        margin: 0;
-        padding: 0;
+<!-- Loading the Leaflet CSS and JS for the map -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<!-- Leaflet Geocoder for location search -->
+<script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
+<!-- Font Awesome for icons -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+<!-- Socket.io client library -->
+<script src="/socket.io/socket.io.js"></script>
+
+<script>
+    // Initialize Socket.io
+    const socket = io();
+    
+    // Function to handle voting on issues
+    function voteIssue(issueId, voteType) {
+        console.log(`Submitting ${voteType}vote for issue ${issueId}`);
+        
+        const container = document.querySelector(`.voting-container[data-id="${issueId}"]`);
+        if (!container) {
+            console.error(`Container for issue ${issueId} not found`);
+            showNotification('Error: Could not find the issue container');
+            return;
+        }
+        
+        const upvoteBtn = container.querySelector('.upvote-btn');
+        const downvoteBtn = container.querySelector('.downvote-btn');
+        
+        // Show loading state
+        if (voteType === 'up') {
+            upvoteBtn.disabled = true;
+            upvoteBtn.innerHTML = `<i class="fa fa-spinner fa-spin"></i> Voting...`;
+        } else {
+            downvoteBtn.disabled = true;
+            downvoteBtn.innerHTML = `<i class="fa fa-spinner fa-spin"></i> Voting...`;
+        }
+        
+        fetch(`/complaint/${issueId}/${voteType}vote`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`Server returned ${response.status}: ${response.statusText}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log(`Vote response:`, data);
+            
+            // Reset button state
+            if (voteType === 'up') {
+                upvoteBtn.disabled = false;
+                upvoteBtn.innerHTML = `<i class="fa fa-thumbs-up"></i> <span class="upvote-count">${data.upvotes || 0}</span>`;
+                upvoteBtn.classList.add('active');
+            } else {
+                downvoteBtn.disabled = false;
+                downvoteBtn.innerHTML = `<i class="fa fa-thumbs-down"></i> <span class="downvote-count">${data.downvotes || 0}</span>`;
+                downvoteBtn.classList.add('active');
+            }
+            
+            // Update counts directly
+            const upvoteCount = container.querySelector('.upvote-count');
+            const downvoteCount = container.querySelector('.downvote-count');
+            
+            if (upvoteCount) upvoteCount.textContent = data.upvotes || 0;
+            if (downvoteCount) downvoteCount.textContent = data.downvotes || 0;
+            
+            // Show success notification
+            showNotification(`Your ${voteType}vote has been recorded!`);
+        })
+        .catch(error => {
+            console.error('Error voting on issue:', error);
+            
+            // Reset button state
+            if (voteType === 'up') {
+                upvoteBtn.disabled = false;
+                upvoteBtn.innerHTML = `<i class="fa fa-thumbs-up"></i> <span class="upvote-count">0</span>`;
+            } else {
+                downvoteBtn.disabled = false;
+                downvoteBtn.innerHTML = `<i class="fa fa-thumbs-down"></i> <span class="downvote-count">0</span>`;
+            }
+            
+            showNotification('Error voting on this issue. Please try again.');
+        });
     }
+    
+    // Listen for status updates
+    socket.on('statusUpdated', function(data) {
+        const statusElement = document.getElementById(`status-${data.id}`);
+        const progressElement = document.getElementById(`progress-${data.id}`);
+        const cardElement = document.getElementById(`card-${data.id}`);
+        
+        if (statusElement && progressElement) {
+            // Update status text
+            statusElement.textContent = data.status;
+            
+            // Remove old status classes
+            statusElement.classList.remove('status-received', 'status-responded', 'status-progress', 'status-done');
+            
+            // Calculate progress width and add new status class
+            let progressWidth = '0%';
+            let statusClass = '';
+            
+            if (data.status === 'Complaint Received') {
+                statusClass = 'status-received';
+                progressWidth = '25%';
+            } else if (data.status === 'Responded by Authority') {
+                statusClass = 'status-responded';
+                progressWidth = '50%';
+            } else if (data.status === 'Work Under Progress') {
+                statusClass = 'status-progress';
+                progressWidth = '75%';
+            } else if (data.status === 'Work Done') {
+                statusClass = 'status-done';
+                progressWidth = '100%';
+            }
+            
+            // Apply new status class and progress width
+            statusElement.classList.add(statusClass);
+            progressElement.style.width = progressWidth;
+            
+            // Highlight the card to draw attention to the update
+            cardElement.classList.add('highlight');
+            setTimeout(() => cardElement.classList.remove('highlight'), 3000);
+            
+            // Show notification
+            showNotification(`Status updated for ${data.type} at ${data.location}: ${data.status}`);
+        }
+    });
+    
+    // Listen for new complaints
+    socket.on('complaintAdded', function(data) {
+        // Create notification
+        showNotification(`New complaint added: ${data.type} at ${data.location}`);
+        
+        // Reload the page to show the new complaint
+        // In a production app, you would dynamically add the new card instead
+        setTimeout(() => window.location.reload(), 2000);
+    });
+    
+    // Function to show notifications
+    function showNotification(message) {
+        // Create notification element
+        const notification = document.createElement('div');
+        notification.className = 'notification';
+        notification.textContent = message;
+        
+        // Add to document
+        document.body.appendChild(notification);
+        
+        // Show notification
+        setTimeout(() => notification.classList.add('show'), 100);
+        
+        // Remove after timeout
+        setTimeout(() => {
+            notification.classList.remove('show');
+            setTimeout(() => notification.remove(), 500);
+        }, 5000);
+    }
+
+    // Initialize the map
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log("Initializing citizen dashboard map");
+        
+        // Create the map
+        const map = L.map('issuesMap').setView([10.8505, 76.2711], 7); // Default center of Kerala, India
+        
+        // Add OpenStreetMap tile layer
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+        
+        // Add search control
+        const searchControl = L.Control.geocoder({
+            defaultMarkGeocode: false,
+            placeholder: "Search for location...",
+            errorMessage: "Location not found"
+        }).addTo(map);
+        
+        // Add markers for each issue
+        const cards = document.querySelectorAll('.card');
+        const bounds = L.latLngBounds();
+        let markersCount = 0;
+        
+        console.log(`Found ${cards.length} issue cards to plot on map`);
+        
+        cards.forEach(card => {
+            const location = card.dataset.location;
+            const issueType = card.dataset.type;
+            const issueId = card.id.replace('card-', '');
+            
+            if (location) {
+                console.log(`Processing location: ${location} for issue: ${issueType}`);
+                
+                // Use direct Nominatim API for more reliable geocoding
+                fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(location)}&limit=1`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data && data.length > 0) {
+                            const result = data[0];
+                            const latlng = L.latLng(parseFloat(result.lat), parseFloat(result.lon));
+                            
+                            console.log(`Found coordinates for ${location}: [${latlng.lat}, ${latlng.lng}]`);
+                            
+                            // Choose marker color based on severity or status
+                            let markerColor = 'blue';
+                            const severityEl = card.querySelector('p:nth-child(3)');
+                            if (severityEl) {
+                                const severity = parseInt(severityEl.textContent.replace('Severity:', '').trim());
+                                if (severity >= 4) markerColor = 'red';
+                                else if (severity === 3) markerColor = 'orange';
+                                else if (severity <= 2) markerColor = 'green';
+                            }
+                            
+                            // Create custom icon based on severity
+                            const icon = L.icon({
+                                iconUrl: `https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-${markerColor}.png`,
+                                shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+                                iconSize: [25, 41],
+                                iconAnchor: [12, 41],
+                                popupAnchor: [1, -34],
+                                shadowSize: [41, 41]
+                            });
+                            
+                            // Add marker with popup
+                            const marker = L.marker(latlng, {icon: icon})
+                                .addTo(map)
+                                .bindPopup(`
+                                    <strong>${issueType}</strong><br>
+                                    ${location}<br>
+                                    <small>Click to view details</small>
+                                `);
+                            
+                            // Add coordinates to bounds and count marker
+                            bounds.extend(latlng);
+                            markersCount++;
+                            
+                            // Fit map to bounds if we have markers
+                            if (markersCount > 0 && bounds.isValid()) {
+                                map.fitBounds(bounds, {padding: [30, 30]});
+                            }
+                            
+                            // Link marker to card
+                            marker.on('click', function() {
+                                card.scrollIntoView({behavior: 'smooth', block: 'center'});
+                                card.classList.add('highlight');
+                                setTimeout(() => card.classList.remove('highlight'), 2000);
+                            });
+                        } else {
+                            console.warn(`Could not geocode location: ${location}`);
+                        }
+                    })
+                    .catch(error => {
+                        console.error(`Error geocoding ${location}:`, error);
+                    });
+            }
+        });
+        
+        // Responsive handling for map
+        window.addEventListener('resize', function() {
+            map.invalidateSize();
+        });
+    });
+
+    // Add voting functionality
+    document.querySelectorAll('.vote-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            const complaintId = this.getAttribute('data-id');
+            const action = this.getAttribute('data-action');
+            
+            fetch(`/vote/${complaintId}/${action}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    document.getElementById(`vote-count-${complaintId}`).textContent = data.votes;
+                    showNotification(`Vote ${action === 'upvote' ? 'up' : 'down'} recorded`, 'success');
+                } else {
+                    showNotification('Error: ' + data.message, 'danger');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showNotification('Error voting on issue', 'danger');
+            });
+        });
+    });
+</script>
+
+<style>
+    .dashboard-header {
+        text-align: center;
+        margin: 20px 0;
+    }
+    
+    .dashboard-header h1 {
+        color: #2a3d66;
+        font-size: 2em;
+        margin-bottom: 5px;
+    }
+    
+    .dashboard-header p {
+        color: #666;
+        margin-top: 0;
+    }
+    
+    /* Map styling */
+    .map-container {
+        width: 100%;
+        height: 400px;
+        margin: 20px 0;
+        border-radius: 10px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        overflow: hidden;
+        z-index: 1;
+    }
+    
+    /* Card container styling */
     .card-container {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
         gap: 20px;
-        padding: 20px;
+        margin: 30px 0;
     }
+    
+    /* Card styling */
     .card {
         background-color: white;
         border-radius: 10px;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
         overflow: hidden;
-        transition: transform 0.3s ease;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
     }
+    
     .card:hover {
-        transform: translateY(-10px);
+        transform: translateY(-5px);
+        box-shadow: 0 6px 15px rgba(0,0,0,0.15);
     }
+    
     .card-img {
         width: 100%;
         height: 200px;
         object-fit: cover;
     }
+    
     .card-content {
         padding: 20px;
     }
-    .card-title {
-        font-size: 1.8em;
+    
+    .card-content h2 {
         color: #2a3d66;
-        margin-bottom: 10px;
+        margin-top: 0;
     }
-    .card-details {
-        font-size: 1.1em;
-        color: #555;
-        margin-bottom: 15px;
-    }
+    
     .progress-bar {
-        width: 100%;
-        background-color: #f3f3f3;
-        border: 1px solid #ccc;
+        background-color: #f0f0f0;
+        height: 10px;
         border-radius: 5px;
-        margin: 10px 0;
-        height: 20px;
+        margin: 15px 0;
         overflow: hidden;
     }
+    
     .progress {
+        background-color: #4CAF50;
         height: 100%;
-        background-color: #4caf50;
-        transition: width 0.3s ease;
+        transition: width 0.5s ease;
     }
-    .comment-header {
-        font-size: 1.4em;
-        color: #2a3d66;
+    
+    .status-label {
+        display: inline-block;
+        padding: 5px 10px;
+        border-radius: 4px;
+        font-size: 0.9em;
+        font-weight: bold;
+    }
+    
+    .status-received {
+        background-color: #ffcd56;
+        color: #856404;
+    }
+    
+    .status-responded {
+        background-color: #36a2eb;
+        color: #004085;
+    }
+    
+    .status-progress {
+        background-color: #9966ff;
+        color: #ffffff;
+    }
+    
+    .status-done {
+        background-color: #4bc0c0;
+        color: #155724;
+    }
+    
+    .comment-section {
         margin-top: 20px;
+        border-top: 1px solid #eee;
+        padding-top: 15px;
     }
+    
+    .comment-header {
+        font-size: 1.1em;
+        margin-bottom: 10px;
+        color: #2a3d66;
+    }
+    
     .comment-list {
         list-style: none;
         padding: 0;
-        margin-top: 10px;
+        margin: 0;
     }
+    
     .comment-item {
-        font-size: 1.1em;
-        color: #444;
-        margin-bottom: 5px;
-    }
-</style> -->
-<% layout("layout") %>
-
-<div class="card-container">
-    <% problems.forEach(problem => { %>
-        <div class="card">
-            <!-- <img src="/<%= problem.image %>" alt="<%= problem.type %>"> -->
-            <img src="<%= problem.image %>" alt="<%= problem.type %>" class="card-img">
-            <h2><%= problem.type %></h2>
-            <p><%= problem.details %></p>
-            <p><strong>Severity:</strong> <%= problem.severity %></p>
-            <p><strong>Location:</strong> <%= problem.location %></p>
-            
-            <h3>Status: <%= problem.status %></h3>
-
-            <% 
-                let progressWidth = '0%';
-                if (problem.status === 'Complaint Received') {
-                    progressWidth = '25%';
-                } else if (problem.status === 'Responded by Authority') {
-                    progressWidth = '50%';
-                } else if (problem.status === 'Work Under Progress') {
-                    progressWidth = '75%';
-                } else if (problem.status === 'Work Done') {
-                    progressWidth = '100%';
-                }
-            %>
-            <div class="progress-bar">
-                <div class="progress" style="width: <%= progressWidth %>"></div>
-            </div>
-            
-            <h3>Comments:</h3>
-            <ul>
-                <% problem.comments.forEach(comment => { %>
-                    <li><%= comment.text %> - <%= new Date(comment.date).toLocaleString() %></li>
-                <% }) %>
-            </ul>
-        </div>
-    <% }) %>
-</div>
-
-<style>
-    .progress-bar {
-        width: 100%;
-        background-color: #f3f3f3;
-        border: 1px solid #ccc;
+        padding: 10px;
+        background-color: #f9f9f9;
         border-radius: 5px;
-        margin: 10px 0;
-        height: 20px;
-        overflow: hidden;
+        margin-bottom: 8px;
+        font-size: 0.9em;
     }
-
-    .progress {
-        height: 100%;
-        width: auto;
-        background-color: #4caf50;
-        transition: width 0.3s ease;
+    
+    .highlight {
+        animation: highlight 2s ease;
+    }
+    
+    @keyframes highlight {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.05); box-shadow: 0 0 20px rgba(42, 61, 102, 0.7); }
+        100% { transform: scale(1); }
+    }
+    
+    .notification {
+        position: fixed;
+        bottom: -100px;
+        right: 20px;
+        background-color: #2a3d66;
+        color: white;
+        padding: 15px 20px;
+        border-radius: 8px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        z-index: 1000;
+        transition: transform 0.5s ease;
+        max-width: 300px;
+    }
+    
+    .notification.show {
+        transform: translateY(-120px);
+    }
+    
+    /* Voting Controls Styling */
+    .voting-container {
+        display: flex;
+        align-items: center;
+        margin: 15px 0;
+        gap: 10px;
+    }
+    
+    .upvote-btn, .downvote-btn {
+        display: flex;
+        align-items: center;
+        padding: 6px 12px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 14px;
+        transition: all 0.2s ease;
+    }
+    
+    .upvote-btn {
+        background-color: #f0f0f0;
+        color: #333;
+    }
+    
+    .downvote-btn {
+        background-color: #f0f0f0;
+        color: #333;
+    }
+    
+    .upvote-btn:hover {
+        background-color: #e6f7f2;
+        color: #28a745;
+    }
+    
+    .downvote-btn:hover {
+        background-color: #fdf1f1;
+        color: #dc3545;
+    }
+    
+    .upvote-btn.active {
+        background-color: #28a745;
+        color: white;
+    }
+    
+    .downvote-btn.active {
+        background-color: #dc3545;
+        color: white;
+    }
+    
+    .upvote-btn i, .downvote-btn i {
+        margin-right: 5px;
+    }
+    
+    .upvote-count, .downvote-count {
+        font-weight: bold;
+        margin-left: 5px;
+    }
+    
+    /* Responsive design */
+    @media (max-width: 768px) {
+        .map-container {
+            height: 300px;
+        }
+        
+        .card-container {
+            grid-template-columns: 1fr;
+        }
     }
 </style>

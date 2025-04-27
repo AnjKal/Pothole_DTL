@@ -1,6 +1,8 @@
 <% layout("layout") %>
 
 <h2 class="dashboard-title">Authority Dashboard</h2>
+
+<!-- Department Selection Form -->
 <form action="/authority" method="GET" class="department-form">
     <label for="type">Select Department:</label>
     <select id="type" name="type" required>
@@ -10,56 +12,68 @@
         <option value="Garbage">Garbage</option>
         <option value="Water Supply">Water Supply</option>
         <option value="Sewage">Sewage</option>
+        <option value="Noise Pollution">Noise Pollution</option>
+        <option value="Stray Dogs">Stray Dogs</option>
         <option value="Other">Other</option>
     </select>
     <button type="submit" class="submit-button">View Problems</button>
 </form>
 
+<!-- Button to View Emergency Issues -->
+<form action="/authority/emergency" method="GET" class="emergency-form">
+    <button type="submit" class="submit-button">View Emergency Issues</button>
+</form>
+
 <hr class="divider">
 
-<div class="card-container">
-    <% problems.forEach(problem => { %>
-        <div class="card">
-            <img src="<%= problem.image %>" alt="<%= problem.type %>" class="card-img">
-            <div class="card-content">
-                <h2 class="card-title"><%= problem.type %></h2>
-                <p class="card-details"><%= problem.details %></p>
-                <p><strong>Severity:</strong> <%= problem.severity %></p>
-                <p><strong>Location:</strong> <%= problem.location %></p>
+<!-- Display Problems (Department-Based) -->
+<% if (problems.length > 0) { %>
+    <div class="card-container">
+        <% problems.forEach(problem => { %>
+            <div class="card">
+                <img src="<%= problem.image %>" alt="<%= problem.type %>" class="card-img">
+                <div class="card-content">
+                    <h2 class="card-title"><%= problem.type %></h2>
+                    <p class="card-details"><%= problem.details %></p>
+                    <p><strong>Severity:</strong> <%= problem.severity %></p>
+                    <p><strong>Location:</strong> <%= problem.location %></p>
 
-                <h3>Status: <%= problem.status %></h3>
-            <form action="/authority/status/<%= problem._id %>" method="POST">
-                <label for="status">Update Status:</label>
-                <select name="status" id="status" required>
-                    <option value="Complaint Received" <% if (problem.status === 'Complaint Received') { %> selected <% } %>>Complaint Received</option>
-                    <option value="Responded by Authority" <% if (problem.status === 'Responded by Authority') { %> selected <% } %>>Responded by Authority</option>
-                    <option value="Work Under Progress" <% if (problem.status === 'Work Under Progress') { %> selected <% } %>>Work Under Progress</option>
-                    <option value="Work Done" <% if (problem.status === 'Work Done') { %> selected <% } %>>Work Done</option>
-                </select>
-                <button type="submit">Update Status</button>
-                
-            </form>
+                    <h3>Status: <%= problem.status %></h3>
+                    <form action="/authority/status/<%= problem._id %>" method="POST">
+                        <label for="status">Update Status:</label>
+                        <select name="status" id="status" required>
+                            <option value="Complaint Received" <% if (problem.status === 'Complaint Received') { %> selected <% } %>>Complaint Received</option>
+                            <option value="Responded by Authority" <% if (problem.status === 'Responded by Authority') { %> selected <% } %>>Responded by Authority</option>
+                            <option value="Work Under Progress" <% if (problem.status === 'Work Under Progress') { %> selected <% } %>>Work Under Progress</option>
+                            <option value="Work Done" <% if (problem.status === 'Work Done') { %> selected <% } %>>Work Done</option>
+                        </select>
+                        <button type="submit">Update Status</button>
+                    </form>
 
-                <h3>Comments:</h3>
-                <ul class="comment-list">
-                    <% problem.comments.forEach(comment => { %>
-                        <li class="comment-item"><%= comment.text %> - <%= new Date(comment.date).toLocaleString() %></li>
-                    <% }) %>
-                </ul>
+                    <h3>Comments:</h3>
+                    <ul class="comment-list">
+                        <% problem.comments.forEach(comment => { %>
+                            <li class="comment-item"><%= comment.text %> - <%= new Date(comment.date).toLocaleString() %></li>
+                        <% }) %>
+                    </ul>
 
-                <form action="/authority/comment/<%= problem._id %>" method="POST" class="comment-form">
-                    <textarea name="comment" placeholder="Add a comment" required></textarea>
-                    <button type="submit" class="submit-button">Submit Comment</button>
-                </form>
+                    <form action="/authority/comment/<%= problem._id %>" method="POST" class="comment-form">
+                        <textarea name="comment" placeholder="Add a comment" required></textarea>
+                        <button type="submit" class="submit-button">Submit Comment</button>
+                    </form>
 
-                <form action="/authority/delete/<%= problem._id %>" method="POST" class="delete-form">
-                    <button type="submit" class="delete-button">Delete Complaint</button>
-                </form>
+                    <form action="/authority/delete/<%= problem._id %>" method="POST" class="delete-form">
+                        <button type="submit" class="delete-button">Delete Complaint</button>
+                    </form>
+                </div>
             </div>
-        </div>
-    <% }) %>
-</div>
+        <% }) %>
+    </div>
+<% } else { %>
+    <p>No problems reported for this department yet.</p>
+<% } %>
 
+<!-- Logout Form -->
 <form action="/logout" method="POST" class="logout-form">
     <button type="submit" class="logout-button">Logout</button>
 </form>
@@ -71,118 +85,23 @@
         margin: 0;
         padding: 0;
     }
-    .dashboard-title {
-        text-align: center;
-        font-size: 2em;
-        color: #2a3d66;
-        margin: 20px 0;
+    .dashboard-title { text-align: center; font-size: 2em; color: #2a3d66; margin: 20px 0; }
+    .department-form { text-align: center; margin-bottom: 30px; }
+    .department-form select, .emergency-form button, .submit-button {
+        padding: 10px; font-size: 1.1em; border: 2px solid #2a3d66; border-radius: 5px;
     }
-    .department-form {
-        text-align: center;
-        margin-bottom: 30px;
-    }
-    .department-form select {
-        padding: 10px;
-        font-size: 1.1em;
-        border: 2px solid #2a3d66;
-        border-radius: 5px;
-    }
-    .submit-button {
-        background-color: #2a3d66;
-        color: white;
-        padding: 10px 20px;
-        border: none;
-        border-radius: 5px;
-        font-size: 1.1em;
-        cursor: pointer;
-        margin-top: 10px;
-        transition: background-color 0.3s;
-    }
-    .submit-button:hover {
-        background-color: #ffbc42;
-    }
-    .divider {
-        border: 1px solid #ddd;
-        margin: 30px 0;
-    }
-    .card-container {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-        gap: 20px;
-        padding: 20px;
-    }
-    .card {
-        background-color: white;
-        border-radius: 10px;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        overflow: hidden;
-        transition: transform 0.3s;
-    }
-    .card:hover {
-        transform: translateY(-10px);
-    }
-    .card-img {
-        width: 100%;
-        height: 200px;
-        object-fit: cover;
-        border-bottom: 2px solid #f0f0f0;
-    }
-    .card-content {
-        padding: 20px;
-    }
-    .card-title {
-        font-size: 1.8em;
-        margin-bottom: 10px;
-        color: #2a3d66;
-    }
-    .card-details {
-        font-size: 1.1em;
-        color: #555;
-        margin-bottom: 20px;
-    }
-    .comment-list {
-        list-style: none;
-        padding: 0;
-    }
-    .comment-item {
-        font-size: 1.1em;
-        color: #444;
-    }
-    .comment-form textarea {
-        width: 100%;
-        padding: 10px;
-        margin-top: 10px;
-        border: 2px solid #2a3d66;
-        border-radius: 5px;
-        font-size: 1em;
-        height: 100px;
-    }
-    .delete-button {
-        background-color: red;
-        color: white;
-        padding: 10px 20px;
-        border: none;
-        border-radius: 5px;
-        cursor: pointer;
-        font-size: 1em;
-    }
-    .delete-button:hover {
-        background-color: darkred;
-    }
-    .logout-form {
-        text-align: right;
-        margin: 20px 20px 0;
-    }
-    .logout-button {
-        background-color: #2a3d66;
-        color: white;
-        padding: 10px 20px;
-        border: none;
-        border-radius: 5px;
-        cursor: pointer;
-        font-size: 1.1em;
-    }
-    .logout-button:hover {
-        background-color: #ffbc42;
-    }
+    .submit-button, .logout-button { background-color: #2a3d66; color: white; cursor: pointer; }
+    .submit-button:hover, .logout-button:hover { background-color: #ffbc42; }
+    .divider { border: 1px solid #ddd; margin: 30px 0; }
+    .card-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; padding: 20px; }
+    .card { background-color: white; border-radius: 10px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); }
+    .card-img { width: 100%; height: 200px; object-fit: cover; border-bottom: 2px solid #f0f0f0; }
+    .card-content { padding: 20px; }
+    .card-title { font-size: 1.8em; margin-bottom: 10px; color: #2a3d66; }
+    .card-details { font-size: 1.1em; color: #555; margin-bottom: 20px; }
+    .comment-list { list-style: none; padding: 0; }
+    .comment-item { font-size: 1.1em; color: #444; }
+    .delete-button { background-color: red; color: white; font-size: 1em; padding: 10px 20px; cursor: pointer; }
+    .delete-button:hover { background-color: darkred; }
+    .logout-form { text-align: right; margin: 20px 20px 0; }
 </style>

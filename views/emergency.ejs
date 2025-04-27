@@ -1,62 +1,60 @@
 <% layout("layout") %>
 
-<h2 class="form-title">Add a Civic Issue</h2>
-<form action="/citizen/add" method="POST" enctype="multipart/form-data" class="issue-form">
-    <!-- Dropdown for selecting the type of problem -->
-    <label for="type" class="form-label">Type of Problem:</label>
-    <select id="type" name="type" required onchange="toggleOtherField()" class="form-input">
-        <option value="" disabled selected>Select an issue type</option>
-        <option value="Road">Road</option>
-        <option value="Streetlight">Streetlight</option>
-        <option value="Garbage">Garbage</option>
-        <option value="Water Supply">Water Supply</option>
-        <option value="Sewage">Sewage</option>
-        <option value="Noise Pollution">Noise Pollution</option>
-        <option value="Stray Dogs">Stray Dogs</option>
+<h2 class="form-title">Report an Emergency</h2>
+<div class="emergency-alert">
+    <p><strong>Important:</strong> For immediate assistance in life-threatening situations, please call emergency services directly.</p>
+</div>
+
+<form action="/citizen/emergency" method="POST" class="emergency-form">
+    <label for="type" class="form-label">Emergency Type:</label>
+    <select id="type" name="type" onchange="toggleOtherTypeField()" class="form-input">
+        <option value="Fire">Fire</option>
+        <option value="Accident">Road Accident</option>
+        <option value="Flooding">Flooding</option>
+        <option value="Building Collapse">Building Collapse</option>
+        <option value="Medical">Medical Emergency</option>
         <option value="Other">Other</option>
     </select>
-    <br><br>
 
-    <!-- Text box for 'Other' problem type -->
-    <div id="otherProblemContainer" class="other-problem-container" style="display: none;">
-        <label for="otherProblem" class="form-label">Specify the Problem:</label>
-        <input type="text" id="otherProblem" name="otherProblem" class="form-input" />
-    </div>
-    <br><br>
-
-    <label for="image" class="form-label">Upload Image:</label>
-    <input type="file" id="image" name="image" accept="image/*" required class="form-input">
-    <br><br>
-
-    <label for="details" class="form-label">Description:</label>
-    <textarea id="details" name="details" required class="form-input"></textarea>
-    <br><br>
-
-    <label for="severity" class="form-label">Severity (1-5):</label>
-    <input type="number" id="severity" name="severity" min="1" max="5" required class="form-input">
-    <br><br>
-
-    <label for="location" class="form-label">Location:</label>
-    <div>
+    <div id="otherTypeField" style="display: none;">
+        <label for="otherType" class="form-label">Please specify the emergency type:</label>
         <input 
             type="text" 
-            id="location" 
-            name="location" 
-            placeholder="Enter the location of the issue" 
-            required
+            id="otherType" 
+            name="otherType" 
+            placeholder="e.g., Gas Leak, Power Line Down" 
             class="form-input"
         >
-        <button type="button" onclick="getCurrentLocation()" class="geo-button">Get Current Location</button>
     </div>
-    
+
+    <label for="details" class="form-label">Details:</label>
+    <textarea 
+        id="details" 
+        name="details" 
+        rows="5" 
+        placeholder="Provide details about the emergency..." 
+        required
+        class="form-input"
+    ></textarea>
+
+    <label for="location" class="form-label">Location:</label>
+    <input 
+        type="text" 
+        id="location" 
+        name="location" 
+        placeholder="Enter the location of the emergency" 
+        required
+        class="form-input"
+    >
+    <button type="button" onclick="getCurrentLocation()" class="geo-button">Get Current Location</button>
+
     <!-- Map Container -->
     <div id="map-container">
         <div id="map" style="height: 300px; margin-top: 15px; border-radius: 5px;"></div>
-        <p class="map-help">You can click on the map to set the location or drag the marker</p>
+        <p class="map-help">Click on the map to set the exact emergency location</p>
     </div>
-    <br><br>
 
-    <button type="submit" class="submit-button">Add Issue</button>
+    <button type="submit" class="emergency-submit">Submit Emergency Report</button>
 </form>
 
 <!-- OpenStreetMap and Leaflet -->
@@ -76,11 +74,11 @@
     // Initialize the map
     function initMap() {
         try {
-            console.log("Initializing map");
+            console.log("Initializing emergency map");
             // Default center (India)
             const defaultCenter = [20.5937, 78.9629];
             
-            // Create a map
+            // Create a map with emergency styling
             map = L.map('map').setView(defaultCenter, 5);
             
             // Add OpenStreetMap tile layer
@@ -88,11 +86,11 @@
                 attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
             }).addTo(map);
             
-            // Add search control
+            // Add search control for emergencies
             const searchControl = L.Control.geocoder({
                 defaultMarkGeocode: false,
-                placeholder: "Search for a location...",
-                errorMessage: "Nothing found."
+                placeholder: "Search for emergency location...",
+                errorMessage: "Location not found"
             }).addTo(map);
             
             // Handle search results
@@ -107,14 +105,14 @@
             
             // Add click listener to the map
             map.on('click', function(e) {
-                console.log("Map clicked at:", e.latlng);
+                console.log("Emergency map clicked at:", e.latlng);
                 placeMarker(e.latlng);
                 getAddressFromLatLng(e.latlng);
             });
             
-            console.log("Map initialized successfully");
+            console.log("Emergency map initialized successfully");
         } catch (e) {
-            console.error("Error initializing map:", e);
+            console.error("Error initializing emergency map:", e);
         }
     }
     
@@ -124,15 +122,25 @@
             // If marker exists, just move it
             marker.setLatLng(latlng);
         } else {
-            // Create a new marker
+            // Create a new marker with emergency icon
+            const emergencyIcon = L.icon({
+                iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
+                shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+                iconSize: [25, 41],
+                iconAnchor: [12, 41],
+                popupAnchor: [1, -34],
+                shadowSize: [41, 41]
+            });
+            
             marker = L.marker(latlng, {
-                draggable: true
+                draggable: true,
+                icon: emergencyIcon
             }).addTo(map);
             
             // Add event listener for marker drag
             marker.on('dragend', function() {
                 const newPos = marker.getLatLng();
-                console.log("Marker dragged to:", newPos);
+                console.log("Emergency marker dragged to:", newPos);
                 getAddressFromLatLng(newPos);
             });
         }
@@ -152,21 +160,21 @@
                     const lng = position.coords.longitude;
                     const latlng = L.latLng(lat, lng);
                     
-                    console.log("Got current location:", lat, lng);
+                    console.log("Got emergency location:", lat, lng);
                     
                     // Place marker at current location
                     placeMarker(latlng);
                     
                     // Zoom in closer to the location
-                    map.setView(latlng, 15);
+                    map.setView(latlng, 16);
                     
                     // Get address for the location
                     getAddressFromLatLng(latlng);
                 },
                 function(error) {
-                    console.error("Error getting current location:", error);
+                    console.error("Error getting emergency location:", error);
                     document.getElementById("location").value = "Unable to access your location.";
-                    alert("Error getting your location. Please enable location services in your browser.");
+                    alert("Error getting your location. Please enable location services in your browser for emergency reporting.");
                 },
                 {
                     enableHighAccuracy: true,
@@ -176,18 +184,18 @@
             );
         } else {
             document.getElementById("location").value = "Geolocation is not supported by this browser.";
-            alert("Your browser doesn't support geolocation services.");
+            alert("Your browser doesn't support geolocation services. Please enter the location manually.");
         }
     }
     
     // Get address from latitude and longitude
     function getAddressFromLatLng(latlng) {
-        console.log("Getting address for:", latlng);
+        console.log("Getting address for emergency:", latlng);
         
         // Update location input with coordinates while we fetch the address
         document.getElementById("location").value = `${latlng.lat.toFixed(6)}, ${latlng.lng.toFixed(6)}`;
         
-        // Now try to get the actual address
+        // Now try to get the actual address using direct Nominatim API
         fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latlng.lat}&lon=${latlng.lng}&zoom=18&addressdetails=1`)
             .then(response => response.json())
             .then(data => {
@@ -196,7 +204,7 @@
                 }
             })
             .catch(error => {
-                console.error("Error reverse geocoding:", error);
+                console.error("Error reverse geocoding for emergency:", error);
                 // Keep the coordinates that we've already set if there's an error
             });
     }
@@ -207,7 +215,7 @@
         
         if (input.trim() === "") return;
         
-        console.log("Searching for location:", input);
+        console.log("Searching for emergency location:", input);
         
         // Use Nominatim API to geocode the input address
         fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(input)}&limit=1`)
@@ -221,16 +229,30 @@
                     placeMarker(latlng);
                     
                     // Zoom in to the found location
-                    map.setView(latlng, 15);
+                    map.setView(latlng, 16);
                     
-                    console.log("Found location:", result.display_name);
+                    console.log("Found emergency location:", result.display_name);
                 } else {
-                    console.log("No location found for:", input);
+                    console.log("No emergency location found for:", input);
+                    alert("Location not found. Please try a different search term or use the map to pick a location.");
                 }
             })
             .catch(error => {
-                console.error("Error searching for location:", error);
+                console.error("Error searching for emergency location:", error);
+                alert("Error searching for location. Please try again or use the map to select a location.");
             });
+    }
+
+    // Toggle the visibility of the "Other" type input field
+    function toggleOtherTypeField() {
+        const typeSelect = document.getElementById("type");
+        const otherTypeField = document.getElementById("otherTypeField");
+
+        if (typeSelect.value === "Other") {
+            otherTypeField.style.display = "block";
+        } else {
+            otherTypeField.style.display = "none";
+        }
     }
     
     // Initialize map when the page loads
@@ -251,118 +273,127 @@
             });
         }
     });
-    
-    // Toggle 'Other' field visibility
-    function toggleOtherField() {
-        const typeSelect = document.getElementById("type");
-        const otherFieldContainer = document.getElementById("otherProblemContainer");
-        if (typeSelect.value === "Other") {
-            otherFieldContainer.style.display = "block";
+
+    // Function to handle emergency form submission
+    document.addEventListener('DOMContentLoaded', function() {
+        const emergencyForm = document.querySelector('.emergency-form');
+        if (emergencyForm) {
+            emergencyForm.addEventListener('submit', function(e) {
+                console.log('Submitting emergency form...');
+                const type = document.getElementById('type').value;
+                const details = document.getElementById('details').value;
+                const location = document.getElementById('location').value;
+                
+                console.log('Emergency data:', { type, details, location });
+                
+                // Add notification
+                alert(`Submitting emergency report: ${type} at ${location}`);
+                // The form will be submitted normally after this
+            });
         } else {
-            otherFieldContainer.style.display = "none";
-            document.getElementById("otherProblem").value = "";
+            console.error('Emergency form not found!');
         }
-    }
+    });
 </script>
 
 <style>
-    body {
-        font-family: 'Arial', sans-serif;
-        background-color: #f4f7fc;
-        margin: 0;
-        padding: 0;
-    }
-
     .form-title {
         text-align: center;
         font-size: 2em;
-        color: #2a3d66;
-        margin-top: 40px;
+        color: #d9534f;
+        margin-top: 20px;
     }
-
-    .issue-form {
+    
+    .emergency-alert {
+        background-color: #fff3cd;
+        border: 1px solid #ffeeba;
+        border-radius: 8px;
+        padding: 15px;
+        margin-bottom: 20px;
+        color: #856404;
+        text-align: center;
+    }
+    
+    .emergency-form {
         background-color: white;
         border-radius: 10px;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
         width: 80%;
-        margin: 30px auto;
-        padding: 20px;
-        font-size: 1.1em;
+        margin: 20px auto;
+        padding: 25px;
     }
-
+    
     .form-label {
-        font-size: 1.2em;
-        margin-bottom: 8px;
-        color: #2a3d66;
         display: block;
+        font-weight: bold;
+        margin-bottom: 8px;
+        color: #333;
     }
-
+    
     .form-input {
         width: 100%;
-        padding: 10px;
-        margin-bottom: 15px;
-        font-size: 1.1em;
+        padding: 12px;
+        margin-bottom: 20px;
+        border: 1px solid #ddd;
         border-radius: 5px;
-        border: 1px solid #ccc;
-        box-sizing: border-box;
+        font-size: 1em;
     }
-
+    
     .form-input:focus {
-        border-color: #ffbc42;
+        border-color: #d9534f;
         outline: none;
+        box-shadow: 0 0 5px rgba(217, 83, 79, 0.3);
     }
-
+    
     #map-container {
-        margin-top: 15px;
-        border-radius: 5px;
+        margin-bottom: 20px;
+        border-radius: 8px;
         overflow: hidden;
-        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
     }
-
+    
     .map-help {
+        text-align: center;
         font-size: 0.9em;
         color: #666;
-        text-align: center;
         margin-top: 5px;
     }
-
+    
     .geo-button {
-        background-color: #2a3d66;
+        background-color: #5bc0de;
         color: white;
+        border: none;
         padding: 10px 15px;
+        border-radius: 5px;
+        cursor: pointer;
         font-size: 1em;
-        border: none;
-        border-radius: 5px;
-        cursor: pointer;
-        display: block;
-        margin: 10px 0;
         width: 100%;
+        margin-bottom: 20px;
     }
-
+    
     .geo-button:hover {
-        background-color: #374f84;
-        transition: background-color 0.2s;
+        background-color: #46b8da;
     }
-
-    .submit-button {
-        background-color: #2a3d66;
+    
+    .emergency-submit {
+        background-color: #d9534f;
         color: white;
-        padding: 12px 20px;
         border: none;
+        padding: 12px 20px;
         border-radius: 5px;
-        font-size: 1.2em;
         cursor: pointer;
+        font-size: 1.2em;
         width: 100%;
         margin-top: 10px;
+        font-weight: bold;
     }
-
-    .submit-button:hover {
-        background-color: #ff9642;
-        transition: background-color 0.3s;
+    
+    .emergency-submit:hover {
+        background-color: #c9302c;
     }
-
+    
     @media (max-width: 768px) {
-        .issue-form {
+        .emergency-form {
             width: 95%;
             padding: 15px;
         }
@@ -371,4 +402,4 @@
             height: 250px;
         }
     }
-</style>
+</style> 

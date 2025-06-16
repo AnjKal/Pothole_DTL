@@ -4,7 +4,7 @@
 
 Watch this video to see it work!
 
-<img src="public/images/terminal-demo.jpg" alt="Terminal Running App" width="600" style="display:block;margin:auto;"/>
+<!-- <img src="public/images/terminal-demo.jpg" alt="Terminal Running App" width="600" style="display:block;margin:auto;"/> -->
 
 SIMPLY RUN NODE APP.JS TO START THE APPLICATION.
 A web application for citizens to report civic issues, and for authorities to manage and track these reports. The system includes an emergency reporting feature and a community discussion forum.

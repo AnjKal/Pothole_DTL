@@ -1,6 +1,15 @@
 # Pothole Reporting Portal
+
+[![YouTube Demo](https://img.shields.io/badge/Watch%20Demo%20on%20YouTube-red?logo=youtube)](https://youtu.be/pxCCh2N8sJ0)
+
+Watch this video to see it work!
+
+<img src="public/images/terminal-demo.jpg" alt="Terminal Running App" width="600" style="display:block;margin:auto;"/>
+
 SIMPLY RUN NODE APP.JS TO START THE APPLICATION.
-A web application for citizens to report potholes and civic issues, and for authorities to manage and track these reports. The system includes an emergency reporting feature and a community discussion forum.
+A web application for citizens to report civic issues, and for authorities to manage and track these reports. The system includes an emergency reporting feature and a community discussion forum.
+
+> **Note:** The entire frontend (all EJS templates and UI) was created using agentic coding tools within an hour.
 
 ## Tech Stack
 
@@ -16,6 +25,8 @@ A web application for citizens to report potholes and civic issues, and for auth
 - **HTML/CSS** - Structure and styling
 - **Bootstrap** (implied from view templates) - CSS framework for responsive design
 
+> The entire frontend was made by using agentic coding tools within an hour.
+
 ### Authentication & Security
 - **Bcrypt** - Password hashing library for secure user authentication
 - **Express-Session** - Session middleware for Express.js
@@ -27,16 +38,33 @@ A web application for citizens to report potholes and civic issues, and for auth
 
 ### Citizen Features
 1. **Report Issues** - Submit complaints about potholes and civic issues
+   <br><img src="images/add issue.png" alt="Add Issue Screenshot" width="350"/>
 2. **Upload Images** - Attach photos to issue reports
+   <br><img src="images/upload media.png" alt="Upload Media Screenshot" width="350"/>
 3. **Emergency Reporting** - Quick reporting for critical issues
+   <br><img src="images/emergency.png" alt="Emergency Reporting Screenshot" width="350"/>
 4. **Track Status** - Monitor progress on reported issues
+   <br><img src="images/status citizen.png" alt="Citizen Status Screenshot" width="350"/>
 5. **Discussion Forum** - Community platform to discuss civic issues
+   <br><img src="images/comments auth.png" alt="Discussion Forum Screenshot" width="350"/>
+6. **Map Overview** - Visualize issues on a map
+   <br><img src="images/map.png" alt="Map Overview Screenshot" width="350"/>
 
 ### Authority Features
 1. **Manage Reports** - View and handle incoming complaints
+   <br><img src="images/status auth.png" alt="Authority Dashboard Screenshot" width="350"/>
 2. **Update Status** - Change the status of reports (e.g., "In Progress", "Resolved")
+   <br><img src="images/status auth.png" alt="Update Status Screenshot" width="350"/>
 3. **Filter Reports** - Filter issues by type
+   <br><img src="images/filter issues.png" alt="Filter Reports Screenshot" width="350"/>
 4. **User Authentication** - Secure login for authorized personnel
+   <br><img src="images/auth login.png" alt="Login Screenshot" width="350"/>
+5. **Landing Page** - Entry point for citizens and authorities
+   <br><img src="images/landing page.png" alt="Landing Page Screenshot" width="350"/>
+6. **Database** - MongoDB database for all civic issues
+   <br><img src="images/database.png" alt="Database Screenshot" width="350"/>
+
+> All frontend features and UI were rapidly developed using agentic coding tools.
 
 ## Project Structure
 
@@ -117,5 +145,3 @@ You can customize the application by:
 2. Updating EJS templates in the `/views` directory
 3. Adding new issue types in the complaint submission form
 
-## License
-ISC
